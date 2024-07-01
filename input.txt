@@ -1,0 +1,2 @@
+A first line with a given length
+A second line with a different length
