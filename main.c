@@ -9,31 +9,29 @@
 
 struct arena {
     char *mem;
-    size_t pos;
-    size_t cap;
+    size_t used;
+    size_t size;
 };
 
 struct arena arena_alloc(size_t size) {
     assert(size);
-    struct arena result = {0};
-    result.mem = malloc(size);
-    assert(result.mem);
-    result.cap = size;
-    return result;
+    char *mem = malloc(size);
+    assert(mem);
+    return (struct arena){.mem = mem, .size = size};
 }
 
 void *arena_push(struct arena *a, size_t size) {
-    assert(a->pos + size <= a->cap);
+    assert(a->used + size <= a->size);
 
-    void *result = a->mem + a->pos;
-    a->pos += size;
+    void *result = a->mem + a->used;
+    a->used += size;
 
     return result;
 }
 
 void arena_pop(struct arena *a, size_t size) {
-    assert(size <= a->pos);
-    a->pos -= size;
+    assert(size <= a->used);
+    a->used -= size;
 }
 
 void arena_free(struct arena *a) {
@@ -41,8 +39,8 @@ void arena_free(struct arena *a) {
     *a = (struct arena){0};
 }
 
-size_t arena_size(struct arena *a) {
-    return a->pos;
+size_t arena_used(struct arena *a) {
+    return a->used;
 }
 
 /*
@@ -99,14 +97,14 @@ void test_with_file() {
     // Calls & checks
     int nb_lines = 0;
     struct string *line;
-    size_t expected_size = 0;
+    size_t expected_used = 0;
     while (0 != (line = get_line(&arena, file))) { // renvoyer une copie
         assert(strlen(line->cstring) == line->size);
-        expected_size += line->size + 1 + sizeof(struct string);
+        expected_used += line->size + 1 + sizeof(struct string);
         ++nb_lines;
     }
 
-    assert(expected_size == arena_size(&arena));
+    assert(expected_used == arena_used(&arena));
     assert(2 == nb_lines);
 
     fclose(file);
