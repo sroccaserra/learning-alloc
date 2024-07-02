@@ -2,7 +2,7 @@
 all: a.out
 	@./a.out
 
-a.out: main.c
+a.out: main.c arena.h
 	cc main.c
 
 .PHONY: clean
