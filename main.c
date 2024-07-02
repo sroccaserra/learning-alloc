@@ -31,6 +31,11 @@ void *arena_alloc(struct arena *a, size_t size) {
     return result;
 }
 
+void arena_pop(struct arena *a, size_t size) {
+    assert(size <= a->pos);
+    a->pos -= size;
+}
+
 void arena_free(struct arena *a) {
     free(a->mem);
     *a = (struct arena){0};
@@ -58,15 +63,16 @@ struct string *get_line(struct arena *a, FILE *file) {
         return 0;
     }
 
-    struct arena scratch = *a;
-    int capacity = INITIAL_CAPACITY;
-    char *cstring = arena_alloc(&scratch, capacity);
-
     char c;
     int size = 0;
+    int capacity = INITIAL_CAPACITY;
+    char *cstring = 0;
     while (EOF != (c = fgetc(file)) && c != '\n') {
+        if (0 == cstring) {
+            cstring = arena_alloc(a, capacity);
+        }
         if (size + 1 >= capacity) {
-            arena_alloc(&scratch, capacity);
+            arena_alloc(a, capacity);
             capacity += capacity;
         }
         cstring[size++] = c;
@@ -75,7 +81,8 @@ struct string *get_line(struct arena *a, FILE *file) {
         return 0;
     }
     cstring[size] = '\0';
-    arena_alloc(a, size + 1);
+    size_t excess = capacity - (size + 1);
+    arena_pop(a, excess);
 
     struct string *result = arena_alloc(a, sizeof(struct string));
     result->cstring = cstring;
