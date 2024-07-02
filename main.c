@@ -1,5 +1,5 @@
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -77,14 +77,14 @@ struct string *get_line(struct arena *a, FILE *file) {
     cstring[size] = '\0';
     arena_alloc(a, size + 1);
 
-    struct string *result = arena_alloc(a, sizeof (struct string));
+    struct string *result = arena_alloc(a, sizeof(struct string));
     result->cstring = cstring;
     result->size = size;
 
     return result;
 }
 
-int main() {
+void test_with_file() {
     FILE *file = fopen("input.txt", "r");
     assert(file);
     struct arena arena = arena_of_size(1000);
@@ -93,16 +93,21 @@ int main() {
     int nb_lines = 0;
     struct string *line;
     size_t expected_size = 0;
-    while (0 != (line = get_line(&arena, file))) {
+    while (0 != (line = get_line(&arena, file))) { // renvoyer une copie
         assert(strlen(line->cstring) == line->size);
         expected_size += line->size + 1 + sizeof(struct string);
         ++nb_lines;
     }
+
     assert(expected_size == arena_size(&arena));
     assert(2 == nb_lines);
 
     fclose(file);
     arena_free(&arena);
     assert(0 == arena.mem);
+}
+
+int main() {
+    test_with_file();
     return 0;
 }
