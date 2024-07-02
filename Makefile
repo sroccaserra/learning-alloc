@@ -2,8 +2,8 @@
 all: a.out
 	@./a.out
 
-a.out: main.c arena.h
-	cc main.c
+a.out: src/main.c src/arena.h
+	cc src/main.c
 
 .PHONY: clean
 clean:
