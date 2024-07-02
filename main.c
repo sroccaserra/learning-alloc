@@ -13,7 +13,7 @@ struct arena {
     size_t cap;
 };
 
-struct arena arena_of_size(size_t size) {
+struct arena arena_alloc(size_t size) {
     assert(size);
     struct arena result = {0};
     result.mem = malloc(size);
@@ -22,7 +22,7 @@ struct arena arena_of_size(size_t size) {
     return result;
 }
 
-void *arena_alloc(struct arena *a, size_t size) {
+void *arena_push(struct arena *a, size_t size) {
     assert(a->pos + size <= a->cap);
 
     void *result = a->mem + a->pos;
@@ -69,10 +69,10 @@ struct string *get_line(struct arena *a, FILE *file) {
     char *cstring = 0;
     while (EOF != (c = fgetc(file)) && c != '\n') {
         if (0 == cstring) {
-            cstring = arena_alloc(a, capacity);
+            cstring = arena_push(a, capacity);
         }
         if (size + 1 >= capacity) {
-            arena_alloc(a, capacity);
+            arena_push(a, capacity);
             capacity += capacity;
         }
         cstring[size++] = c;
@@ -84,7 +84,7 @@ struct string *get_line(struct arena *a, FILE *file) {
     size_t excess = capacity - (size + 1);
     arena_pop(a, excess);
 
-    struct string *result = arena_alloc(a, sizeof(struct string));
+    struct string *result = arena_push(a, sizeof(struct string));
     result->cstring = cstring;
     result->size = size;
 
@@ -94,7 +94,7 @@ struct string *get_line(struct arena *a, FILE *file) {
 void test_with_file() {
     FILE *file = fopen("input.txt", "r");
     assert(file);
-    struct arena arena = arena_of_size(1000);
+    struct arena arena = arena_alloc(1000);
 
     // Calls & checks
     int nb_lines = 0;
