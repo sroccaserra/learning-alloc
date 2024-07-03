@@ -19,10 +19,12 @@ void arena_free(struct arena *a) {
     *a = (struct arena){0};
 }
 
+#define arena_pointer(a) ((a)->mem + (a)->used)
+
 void *arena_push(struct arena *a, size_t size) {
     assert(a->used + size <= a->size);
 
-    void *result = a->mem + a->used;
+    void *result = arena_pointer(a);
     a->used += size;
 
     return result;
