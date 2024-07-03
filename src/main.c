@@ -6,6 +6,7 @@
 #include "arena.h"
 
 #define INITIAL_CAPACITY 8
+#define MAX_LINES 2
 
 char *get_line(struct arena *a, FILE *file) {
     assert(a);
@@ -44,22 +45,16 @@ struct lines {
 };
 
 struct lines *get_lines(struct arena *a, FILE *file) {
-    int nb_lines = 0;
-    char *line_start = arena_pointer(a);
-    while (0 != get_line(a, file)) {
-        ++nb_lines;
-    }
-    char **items = arena_push(a, nb_lines*sizeof(*items));
-    for (int i = 0 ; i < nb_lines; ++i) {
-        items[i] = line_start;
-        while(*line_start != '\0') {
-            ++line_start;
-        }
-        ++line_start;
+    int count = 0;
+    char **items = arena_push(a, MAX_LINES*sizeof(*items));
+    char *line;
+    while (0 != (line = get_line(a, file))) {
+        assert(count < MAX_LINES);
+        items[count++] = line;
     }
     struct lines *result = arena_push(a, sizeof(*result));
     result->items = items;
-    result->count = nb_lines;
+    result->count = count;
     return result;
 }
 
