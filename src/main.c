@@ -49,18 +49,17 @@ struct lines {
 
 struct lines *get_lines(struct arena *a, FILE *file) {
     int nb_lines = 0;
-    char *c = arena_pointer(a);
+    char *line_start = arena_pointer(a);
     while (0 != get_line(a, file)) {
         ++nb_lines;
     }
     char **items = arena_push(a, nb_lines*sizeof(*items));
     for (int i = 0 ; i < nb_lines; ++i) {
-        char *line = c;
-        while(*c != '\0') {
-            ++c;
+        items[i] = line_start;
+        while(*line_start != '\0') {
+            ++line_start;
         }
-        ++c;
-        items[i] = line;
+        ++line_start;
     }
     struct lines *result = arena_push(a, sizeof(*result));
     result->items = items;
