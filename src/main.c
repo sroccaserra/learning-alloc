@@ -5,10 +5,6 @@
 
 #include "arena.h"
 
-/*
- * Text
- */
-
 #define INITIAL_CAPACITY 8
 
 char *get_line(struct arena *a, FILE *file) {
@@ -66,6 +62,10 @@ struct lines *get_lines(struct arena *a, FILE *file) {
     result->count = nb_lines;
     return result;
 }
+
+/*********
+ * Tests *
+ *********/
 
 void test_get_line() {
     FILE *file = fopen("input.txt", "r");
