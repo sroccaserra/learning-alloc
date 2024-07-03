@@ -53,7 +53,7 @@ struct lines *get_lines(struct arena *a, FILE *file) {
     while (0 != get_line(a, file)) {
         ++nb_lines;
     }
-    char **items = arena_push(a, nb_lines*sizeof(char *));
+    char **items = arena_push(a, nb_lines*sizeof(*items));
     for (int i = 0 ; i < nb_lines; ++i) {
         char *line = c;
         while(*c != '\0') {
@@ -62,7 +62,7 @@ struct lines *get_lines(struct arena *a, FILE *file) {
         ++c;
         items[i] = line;
     }
-    struct lines *result = arena_push(a, sizeof(struct lines));
+    struct lines *result = arena_push(a, sizeof(*result));
     result->items = items;
     result->count = nb_lines;
     return result;
@@ -71,7 +71,7 @@ struct lines *get_lines(struct arena *a, FILE *file) {
 void test_get_line() {
     FILE *file = fopen("input.txt", "r");
     assert(file);
-    struct arena arena = arena_alloc(1000);
+    struct arena arena = arena_alloc(128); // The following heap allocs fit in 128 bytes
 
     // Calls & checks
     int nb_lines = 0;
@@ -93,7 +93,7 @@ void test_get_line() {
 void test_get_lines() {
     FILE *file = fopen("input.txt", "r");
     assert(file);
-    struct arena arena = arena_alloc(1000);
+    struct arena arena = arena_alloc(128); // The following heap allocs fit in 128 bytes
     struct lines *lines = get_lines(&arena, file);
     fclose(file);
 
