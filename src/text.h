@@ -43,6 +43,11 @@ long slurp(struct arena *a, char *filename, char **ptext) {
  ***************/
 
 int split_lines(struct arena *a, char *text, char **lines[]) {
+    if ('\0' == text[0]) {
+        *lines = NULL;
+        return 0;
+    }
+
     char **items;
     size_t item_size = sizeof(items[0]);
     int capacity = 8;
