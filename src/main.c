@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -59,6 +60,37 @@ struct lines *get_lines(struct arena *a, FILE *file) {
 }
 
 /*********
+ * Slurp *
+ *********/
+
+#define check_errno(str) do { \
+        if(errno) {           \
+            perror(str);      \
+            exit(1);          \
+        }                     \
+    } while(0)
+
+long slurp(struct arena *a, char *filename, char **ptr) {
+    errno = 0;
+    FILE *file = fopen(filename, "r");
+    check_errno(filename);
+    assert(file);
+    fseek(file, 0, SEEK_END);
+    long size = ftell(file);
+    rewind(file);
+
+    char *text = arena_push(a, size + 1);
+    errno = 0;
+    fread(text, size, 1, file);
+    check_errno(NULL);
+    fclose(file);
+    text[size] = '\0';
+
+    *ptr = text;
+    return size;
+}
+
+/*********
  * Tests *
  *********/
 
@@ -98,8 +130,18 @@ void test_get_lines() {
     arena_free(&arena);
 }
 
+void test_slurp() {
+    struct arena arena = arena_alloc(128);
+    char *text = NULL;
+    long size = slurp(&arena, "input.txt", &text);
+    assert(71 == size);
+
+    arena_free(&arena);
+}
+
 int main() {
     test_get_line();
     test_get_lines();
+    test_slurp();
     return 0;
 }
