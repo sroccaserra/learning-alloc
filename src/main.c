@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "arena.h"
+#include "testing.h"
 
 #define INITIAL_CAPACITY 8
 #define MAX_LINES 2
@@ -138,11 +139,11 @@ void test_get_line() {
     }
     fclose(file);
 
-    assert(expected_used == arena_used(&arena));
-    assert(2 == nb_lines);
+    assert_equals(expected_used, arena_used(&arena));
+    assert_equals(2, nb_lines);
 
     arena_free(&arena);
-    assert(0 == arena.mem);
+    assert_null(arena.mem);
 }
 
 void test_get_lines() {
@@ -154,9 +155,9 @@ void test_get_lines() {
     int nb_lines = get_lines(&arena, file, &lines);
     fclose(file);
 
-    assert(2 == nb_lines);
-    assert(0 == strcmp("A first line with a given length", lines[0]));
-    assert(0 == strcmp("A second line with a different length", lines[1]));
+    assert_equals(2, nb_lines);
+    assert_equals("A first line with a given length", lines[0]);
+    assert_equals("A second line with a different length", lines[1]);
 
     arena_free(&arena);
 }
@@ -167,8 +168,8 @@ void test_slurp() {
     char *text = NULL;
     long size = slurp(&arena, "input.txt", &text);
 
-    assert(71 == size);
-    assert(71+1 == arena_used(&arena));
+    assert_equals(71, size);
+    assert_equals(71 + 1, arena_used(&arena));
 
     arena_free(&arena);
 }
@@ -180,10 +181,10 @@ void test_split_lines() {
     char **lines = NULL;
     int nb_lines = split_lines(&arena, text, &lines);
 
-    assert(2 == nb_lines);
-    assert(0 == strcmp("two", lines[0]));
-    assert(0 == strcmp("lines", lines[1]));
-    assert(nb_lines*sizeof(lines[0]) == arena_used(&arena));
+    assert_equals(2, nb_lines);
+    assert_equals("two", lines[0]);
+    assert_equals("lines", lines[1]);
+    assert_equals(nb_lines*sizeof(lines[0]), arena_used(&arena));
 
     arena_free(&arena);
 }
