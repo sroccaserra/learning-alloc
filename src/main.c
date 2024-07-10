@@ -133,13 +133,18 @@ void test_split_two_lines_without_last_eol() {
 }
 
 int main() {
+    TEST_START("get_lines");
     test_get_line();
     test_get_lines();
+    TEST_END;
+
+    TEST_START("text");
     test_slurp();
     test_split_zero_lines();
     test_split_one_line();
     test_split_one_line_without_eol();
     test_split_two_lines();
     test_split_two_lines_without_last_eol();
+    TEST_END;
     return 0;
 }

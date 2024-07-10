@@ -29,6 +29,10 @@ int check_equals_uint64_t(uint64_t expected, uint64_t actual) {
     return check_equals(expected, actual);
 }
 
+int check_equals_int64_t(int64_t expected, int64_t actual) {
+    return check_equals(expected, actual);
+}
+
 int check_equals_int(int expected, int actual) {
     return check_equals(expected, actual);
 }
@@ -47,6 +51,7 @@ int check_equals_str(char *expected, char *actual) {
 
 #define gen_check_equals(e, a) _Generic((e), \
         uint64_t: check_equals_uint64_t, \
+        int64_t: check_equals_int64_t, \
         int: check_equals_int, \
         void *: check_equals_ptr, \
         char *: check_equals_str) \
