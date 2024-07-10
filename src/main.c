@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -68,7 +69,7 @@ struct lines *get_lines(struct arena *a, FILE *file) {
             perror(str);      \
             exit(1);          \
         }                     \
-    } while(0)
+    } while (0)
 
 long slurp(struct arena *a, char *filename, char **ptr) {
     errno = 0;
@@ -88,6 +89,39 @@ long slurp(struct arena *a, char *filename, char **ptr) {
 
     *ptr = text;
     return size;
+}
+
+/***************
+ * Split Lines *
+ ***************/
+
+void split_lines(struct arena *a, char *text, char **lines[], int *pnb_lines) {
+    char **items;
+    size_t item_size = sizeof(items[0]);
+    int capacity = INITIAL_CAPACITY;
+    items = arena_push(a, capacity*item_size);
+
+    char *save_ptr = NULL;
+    int nb_items = 0;
+    while (true) {
+        if (capacity < nb_items) {
+            arena_push(a, capacity*item_size); // extend the allocated size for items
+            capacity += capacity;
+        }
+        char *token = strtok_r(text, "\n", &save_ptr);
+        items[nb_items] = token;
+        if (NULL == token) {
+            break;
+        }
+        ++nb_items;
+        text = NULL;
+    }
+
+    size_t excess = (capacity - nb_items)*item_size;
+    arena_pop(a, excess); // trim the allocated size for items
+
+    *pnb_lines = nb_items;
+    *lines = items;
 }
 
 /*********
@@ -132,9 +166,28 @@ void test_get_lines() {
 
 void test_slurp() {
     struct arena arena = arena_alloc(128);
+
     char *text = NULL;
     long size = slurp(&arena, "input.txt", &text);
+
     assert(71 == size);
+    assert(71+1 == arena_used(&arena));
+
+    arena_free(&arena);
+}
+
+void test_split_lines() {
+    struct arena arena = arena_alloc(64);
+    char text[] = "two\nlines\n";
+
+    char **lines = NULL;
+    int nb_lines = 0;
+    split_lines(&arena, text, &lines, &nb_lines);
+
+    assert(2 == nb_lines);
+    assert(0 == strcmp("two", lines[0]));
+    assert(0 == strcmp("lines", lines[1]));
+    assert(nb_lines*sizeof(lines[0]) == arena_used(&arena));
 
     arena_free(&arena);
 }
@@ -143,5 +196,6 @@ int main() {
     test_get_line();
     test_get_lines();
     test_slurp();
+    test_split_lines();
     return 0;
 }
