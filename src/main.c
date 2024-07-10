@@ -87,7 +87,7 @@ long slurp(struct arena *a, char *filename, char **ptr) {
  * Split Lines *
  ***************/
 
-void split_lines(struct arena *a, char *text, char **lines[], int *pnb_lines) {
+int split_lines(struct arena *a, char *text, char **lines[]) {
     char **items;
     size_t item_size = sizeof(items[0]);
     int capacity = INITIAL_CAPACITY;
@@ -112,8 +112,8 @@ void split_lines(struct arena *a, char *text, char **lines[], int *pnb_lines) {
     size_t excess = (capacity - nb_items)*item_size;
     arena_pop(a, excess); // trim the allocated size for items
 
-    *pnb_lines = nb_items;
     *lines = items;
+    return nb_items;
 }
 
 /*********
@@ -175,8 +175,7 @@ void test_split_lines() {
     char text[] = "two\nlines\n";
 
     char **lines = NULL;
-    int nb_lines = 0;
-    split_lines(&arena, text, &lines, &nb_lines);
+    int nb_lines = split_lines(&arena, text, &lines);
 
     assert(2 == nb_lines);
     assert(0 == strcmp("two", lines[0]));
