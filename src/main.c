@@ -41,23 +41,15 @@ char *get_line(struct arena *a, FILE *file) {
     return result;
 }
 
-struct lines {
-    char **items;
-    int count;
-};
-
-struct lines *get_lines(struct arena *a, FILE *file) {
-    int count = 0;
-    char **items = arena_push(a, MAX_LINES*sizeof(*items));
+int get_lines(struct arena *a, FILE *file, char **lines[]) {
+    int nb_lines = 0;
+    *lines = arena_push(a, MAX_LINES*sizeof((*lines)[0]));
     char *line;
     while (0 != (line = get_line(a, file))) {
-        assert(count < MAX_LINES);
-        items[count++] = line;
+        assert(nb_lines < MAX_LINES);
+        (*lines)[nb_lines++] = line;
     }
-    struct lines *result = arena_push(a, sizeof(*result));
-    result->items = items;
-    result->count = count;
-    return result;
+    return nb_lines;
 }
 
 /*********
@@ -154,12 +146,14 @@ void test_get_lines() {
     FILE *file = fopen("input.txt", "r");
     assert(file);
     struct arena arena = arena_alloc(128); // The following heap allocs fit in 128 bytes
-    struct lines *lines = get_lines(&arena, file);
+
+    char **lines = NULL;
+    int nb_lines = get_lines(&arena, file, &lines);
     fclose(file);
 
-    assert(2 == lines->count);
-    assert(0 == strcmp("A first line with a given length", lines->items[0]));
-    assert(0 == strcmp("A second line with a different length", lines->items[1]));
+    assert(2 == nb_lines);
+    assert(0 == strcmp("A first line with a given length", lines[0]));
+    assert(0 == strcmp("A second line with a different length", lines[1]));
 
     arena_free(&arena);
 }
