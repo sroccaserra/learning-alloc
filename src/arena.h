@@ -1,3 +1,6 @@
+#ifndef ARENA_H
+#define ARENA_H
+
 #include <assert.h>
 #include <stdlib.h>
 
@@ -38,3 +41,5 @@ void arena_pop(struct arena *a, size_t size) {
 size_t arena_used(struct arena *a) {
     return a->used;
 }
+
+#endif
