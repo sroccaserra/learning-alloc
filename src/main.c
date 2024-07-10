@@ -42,13 +42,16 @@ char *get_line(struct arena *a, FILE *file) {
 }
 
 int get_lines(struct arena *a, FILE *file, char **lines[]) {
-    int nb_lines = 0;
-    *lines = arena_push(a, MAX_LINES*sizeof((*lines)[0]));
+    char **items;
+    items = arena_push(a, MAX_LINES*sizeof(items[0]));
+
     char *line;
+    int nb_lines = 0;
     while (0 != (line = get_line(a, file))) {
         assert(nb_lines < MAX_LINES);
-        (*lines)[nb_lines++] = line;
+        items[nb_lines++] = line;
     }
+    *lines = items;
     return nb_lines;
 }
 
@@ -63,7 +66,7 @@ int get_lines(struct arena *a, FILE *file, char **lines[]) {
         }                     \
     } while (0)
 
-long slurp(struct arena *a, char *filename, char **ptr) {
+long slurp(struct arena *a, char *filename, char **ptext) {
     errno = 0;
     FILE *file = fopen(filename, "r");
     check_errno(filename);
@@ -72,14 +75,14 @@ long slurp(struct arena *a, char *filename, char **ptr) {
     long size = ftell(file);
     rewind(file);
 
-    char *text = arena_push(a, size + 1);
+    char *buffer = arena_push(a, size + 1);
     errno = 0;
-    fread(text, size, 1, file);
+    fread(buffer, size, 1, file);
     check_errno(NULL);
     fclose(file);
-    text[size] = '\0';
+    buffer[size] = '\0';
 
-    *ptr = text;
+    *ptext = buffer;
     return size;
 }
 
